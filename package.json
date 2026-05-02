@@ -1,0 +1,10 @@
+{
+  "name": "wbjee-college-predictor-root",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev:front": "npm --prefix college-predictor run dev",
+    "dev:server": "npm --prefix server run dev",
+    "dev": "npx --yes concurrently \"npm --prefix college-predictor run dev\" \"npm --prefix server run dev\""
+  }
+}
