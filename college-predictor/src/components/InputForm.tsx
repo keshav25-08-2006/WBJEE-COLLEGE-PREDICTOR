@@ -1,12 +1,13 @@
 import { type FormEvent, useCallback } from 'react';
 import { Search } from 'lucide-react';
-import type { FilterState, FilterOptions } from '../types';
+import type { FilterState, FilterOptions, ExamConfig } from '../types';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Select } from './ui/select';
 import { Button } from './ui/button';
 
 interface InputFormProps {
+  config: ExamConfig;
   filters: FilterState;
   filterOptions: FilterOptions | null;
   onFiltersChange: (filters: FilterState) => void;
@@ -19,6 +20,7 @@ function toSelectOptions(values: string[]): { value: string; label: string }[] {
 }
 
 function InputForm({
+  config,
   filters,
   filterOptions,
   onFiltersChange,
@@ -45,16 +47,31 @@ function InputForm({
     ? toSelectOptions(filterOptions.rounds)
     : [{ value: filters.round, label: filters.round }];
 
+  const genderOptions = filterOptions
+    ? toSelectOptions(filterOptions.genders)
+    : filters.gender
+      ? [{ value: filters.gender, label: filters.gender }]
+      : [];
+
+  // Calculate grid columns based on visible fields
+  const visibleFields = 1 + 1 + (config.showQuota ? 1 : 0) + (config.showRound ? 1 : 0) + (config.showGender ? 1 : 0);
+  const gridClass =
+    visibleFields <= 3
+      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+      : visibleFields <= 4
+        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5';
+
   return (
     <Card>
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={`grid gap-4 ${gridClass}`}>
           <Input
             id="rank-input"
-            label="Your WBJEE Rank"
+            label={config.rankLabel}
             type="number"
             min={1}
-            max={200000}
+            max={config.rankMax}
             placeholder="e.g. 5000"
             value={filters.rank ?? ''}
             onChange={(e) =>
@@ -67,7 +84,7 @@ function InputForm({
 
           <Select
             id="category-select"
-            label="Category"
+            label="Category / Seat Type"
             options={categoryOptions}
             value={filters.category}
             onChange={(e) =>
@@ -75,25 +92,41 @@ function InputForm({
             }
           />
 
-          <Select
-            id="quota-select"
-            label="Quota"
-            options={quotaOptions}
-            value={filters.quota}
-            onChange={(e) =>
-              onFiltersChange({ ...filters, quota: e.target.value })
-            }
-          />
+          {config.showQuota && (
+            <Select
+              id="quota-select"
+              label="Quota"
+              options={quotaOptions}
+              value={filters.quota}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, quota: e.target.value })
+              }
+            />
+          )}
 
-          <Select
-            id="round-select"
-            label="Counselling Round"
-            options={roundOptions}
-            value={filters.round}
-            onChange={(e) =>
-              onFiltersChange({ ...filters, round: e.target.value })
-            }
-          />
+          {config.showRound && (
+            <Select
+              id="round-select"
+              label="Counselling Round"
+              options={roundOptions}
+              value={filters.round}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, round: e.target.value })
+              }
+            />
+          )}
+
+          {config.showGender && genderOptions.length > 0 && (
+            <Select
+              id="gender-select"
+              label="Gender"
+              options={genderOptions}
+              value={filters.gender}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, gender: e.target.value })
+              }
+            />
+          )}
         </div>
 
         <Button

@@ -1,3 +1,5 @@
+export type ExamType = 'wbjee' | 'jee-main' | 'jee-advanced';
+
 export type Chance = 'Safe' | 'Moderate' | 'Risky';
 
 export type SortField = 'closingRank' | 'institute';
@@ -13,6 +15,7 @@ export interface CollegeResult {
   seatType: string;
   quota: string;
   category: string;
+  gender: string;
   chance: Chance;
 }
 
@@ -21,6 +24,7 @@ export interface FilterState {
   category: string;
   quota: string;
   round: string;
+  gender: string;
 }
 
 export interface SearchFilters {
@@ -42,4 +46,18 @@ export interface FilterOptions {
   quotas: string[];
   rounds: string[];
   seatTypes: string[];
+  genders: string[];
+}
+
+export interface ExamConfig {
+  examType: ExamType;
+  title: string;
+  subtitle: string;
+  rankLabel: string;
+  rankMax: number;
+  showQuota: boolean;
+  showGender: boolean;
+  showRound: boolean;
+  accentColor: string;
+  defaultFilters: FilterState;
 }

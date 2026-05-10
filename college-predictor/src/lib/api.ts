@@ -1,21 +1,33 @@
-import type { FilterState, PaginatedResponse, FilterOptions } from '../types';
+import type { ExamType, FilterState, PaginatedResponse, FilterOptions } from '../types';
 
 const API_BASE = '/api';
 
 export async function fetchPredictions(
+  exam: ExamType,
   filters: FilterState,
   search?: string,
   page = 1,
   limit = 100,
 ): Promise<PaginatedResponse> {
   const params = new URLSearchParams({
+    exam,
     rank: String(filters.rank),
     category: filters.category,
-    quota: filters.quota,
-    round: filters.round,
     page: String(page),
     limit: String(limit),
   });
+
+  if (filters.quota) {
+    params.set('quota', filters.quota);
+  }
+
+  if (filters.round) {
+    params.set('round', filters.round);
+  }
+
+  if (filters.gender) {
+    params.set('gender', filters.gender);
+  }
 
   if (search?.trim()) {
     params.set('search', search.trim());
@@ -31,8 +43,8 @@ export async function fetchPredictions(
   return res.json();
 }
 
-export async function fetchFilterOptions(): Promise<FilterOptions> {
-  const res = await fetch(`${API_BASE}/filters`);
+export async function fetchFilterOptions(exam: ExamType = 'wbjee'): Promise<FilterOptions> {
+  const res = await fetch(`${API_BASE}/filters?exam=${exam}`);
 
   if (!res.ok) {
     throw new Error(`Failed to load filter options: HTTP ${res.status}`);

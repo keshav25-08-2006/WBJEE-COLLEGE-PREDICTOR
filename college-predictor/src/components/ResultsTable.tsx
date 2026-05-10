@@ -7,12 +7,14 @@ import {
   Tag,
   SearchX,
   Landmark,
+  Users,
 } from 'lucide-react';
-import type { CollegeResult, Chance } from '../types';
+import type { CollegeResult, Chance, ExamConfig } from '../types';
 import { Badge } from './ui/badge';
 import { ResultCardSkeleton } from './ui/skeleton';
 
 interface ResultsTableProps {
+  config: ExamConfig;
   results: CollegeResult[];
   isLoading: boolean;
   hasSearched: boolean;
@@ -30,7 +32,7 @@ const chanceIcons: Record<Chance, string> = {
   Risky: '⚠️',
 };
 
-function ResultsTable({ results, isLoading, hasSearched }: ResultsTableProps) {
+function ResultsTable({ config, results, isLoading, hasSearched }: ResultsTableProps) {
   if (!hasSearched) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -41,7 +43,7 @@ function ResultsTable({ results, isLoading, hasSearched }: ResultsTableProps) {
           Ready to predict
         </h3>
         <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-          Enter your WBJEE rank and select your category to discover matching
+          Enter your {config.title.replace(' College Predictor', '')} rank and select your category to discover matching
           colleges and programs.
         </p>
       </div>
@@ -80,7 +82,7 @@ function ResultsTable({ results, isLoading, hasSearched }: ResultsTableProps) {
       <AnimatePresence mode="popLayout">
         {results.map((result, index) => (
           <motion.div
-            key={`${result.institute}-${result.program}-${result.category}-${result.quota}-${result.round}`}
+            key={`${result.institute}-${result.program}-${result.category}-${result.quota}-${result.round}-${result.gender}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -89,7 +91,7 @@ function ResultsTable({ results, isLoading, hasSearched }: ResultsTableProps) {
               delay: Math.min(index * 0.04, 0.4),
             }}
           >
-            <ResultCard result={result} />
+            <ResultCard result={result} showGender={config.showGender} />
           </motion.div>
         ))}
       </AnimatePresence>
@@ -97,7 +99,7 @@ function ResultsTable({ results, isLoading, hasSearched }: ResultsTableProps) {
   );
 }
 
-function ResultCard({ result }: { result: CollegeResult }) {
+function ResultCard({ result, showGender }: { result: CollegeResult; showGender: boolean }) {
   return (
     <div className="group rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-indigo-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-800">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -149,6 +151,14 @@ function ResultCard({ result }: { result: CollegeResult }) {
           value={result.quota}
           color="text-slate-500 dark:text-slate-400"
         />
+        {showGender && result.gender && (
+          <Stat
+            icon={<Users size={13} />}
+            label="Gender"
+            value={result.gender.replace(' (including Supernumerary)', '')}
+            color="text-violet-500 dark:text-violet-400"
+          />
+        )}
       </div>
     </div>
   );

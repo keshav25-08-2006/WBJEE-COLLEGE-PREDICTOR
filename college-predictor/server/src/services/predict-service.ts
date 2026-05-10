@@ -4,6 +4,7 @@ import type {
   CollegeData,
   PredictionResult,
   PaginatedResponse,
+  ExamType,
 } from '../types/index.js';
 
 interface FilterParams {
@@ -12,6 +13,7 @@ interface FilterParams {
   quota?: string;
   round?: string;
   seatType?: string;
+  gender?: string;
   search?: string;
 }
 
@@ -24,8 +26,8 @@ interface PaginationParams {
 const cache = new Map<string, { results: PredictionResult[]; ts: number }>();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-function getCacheKey(filters: FilterParams): string {
-  return JSON.stringify(filters);
+function getCacheKey(exam: ExamType, filters: FilterParams): string {
+  return JSON.stringify({ exam, ...filters });
 }
 
 function filterAndPredict(
@@ -35,7 +37,7 @@ function filterAndPredict(
   const results: PredictionResult[] = [];
 
   for (const entry of data) {
-    // 1. Category match (case-insensitive)
+    // 1. Category / Seat Type match (case-insensitive)
     if (entry.category.toLowerCase() !== params.category.toLowerCase()) {
       continue;
     }
@@ -56,7 +58,7 @@ function filterAndPredict(
       continue;
     }
 
-    // 4. Seat type match
+    // 4. Seat type match (for JEE, seat type is different from category)
     if (
       params.seatType &&
       entry.seatType.toLowerCase() !== params.seatType.toLowerCase()
@@ -64,12 +66,21 @@ function filterAndPredict(
       continue;
     }
 
-    // 5. Rank qualification
+    // 5. Gender match
+    if (
+      params.gender &&
+      entry.gender &&
+      entry.gender.toLowerCase() !== params.gender.toLowerCase()
+    ) {
+      continue;
+    }
+
+    // 6. Rank qualification
     if (params.rank > entry.closingRank) {
       continue;
     }
 
-    // 6. Search filter
+    // 7. Search filter
     if (
       params.search &&
       !ciIncludes(entry.institute, params.search) &&
@@ -91,10 +102,11 @@ function filterAndPredict(
 }
 
 export function predict(
+  exam: ExamType,
   params: FilterParams,
   pagination: PaginationParams,
 ): PaginatedResponse {
-  const cacheKey = getCacheKey(params);
+  const cacheKey = getCacheKey(exam, params);
   const now = Date.now();
 
   let allResults: PredictionResult[];
@@ -103,7 +115,7 @@ export function predict(
   if (cached && now - cached.ts < CACHE_TTL_MS) {
     allResults = cached.results;
   } else {
-    allResults = filterAndPredict(getData(), params);
+    allResults = filterAndPredict(getData(exam), params);
     cache.set(cacheKey, { results: allResults, ts: now });
   }
 
@@ -122,22 +134,25 @@ export function predict(
   };
 }
 
-export function getDistinctValues(): {
+export function getDistinctValues(exam: ExamType = 'wbjee'): {
   categories: string[];
   quotas: string[];
   rounds: string[];
   seatTypes: string[];
+  genders: string[];
 } {
   const cats = new Set<string>();
   const quotas = new Set<string>();
   const rounds = new Set<string>();
   const seatTypes = new Set<string>();
+  const genders = new Set<string>();
 
-  for (const entry of getData()) {
+  for (const entry of getData(exam)) {
     if (entry.category) cats.add(entry.category);
     if (entry.quota) quotas.add(entry.quota);
     if (entry.round) rounds.add(entry.round);
     if (entry.seatType) seatTypes.add(entry.seatType);
+    if (entry.gender) genders.add(entry.gender);
   }
 
   return {
@@ -145,5 +160,6 @@ export function getDistinctValues(): {
     quotas: [...quotas].sort(),
     rounds: [...rounds].sort(),
     seatTypes: [...seatTypes].sort(),
+    genders: [...genders].sort(),
   };
 }

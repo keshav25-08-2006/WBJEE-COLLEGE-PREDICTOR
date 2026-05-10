@@ -1,12 +1,23 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { ErrorResponse } from '../types/index.js';
+import type { ErrorResponse, ExamType } from '../types/index.js';
+
+const VALID_EXAMS: ExamType[] = ['wbjee', 'jee-main', 'jee-advanced'];
 
 export function validatePredictQuery(
   req: Request,
   res: Response,
   next: NextFunction,
 ): void {
-  const { rank, category } = req.query;
+  const { rank, category, exam } = req.query;
+
+  // Validate exam type
+  if (exam && !VALID_EXAMS.includes(exam as ExamType)) {
+    res.status(400).json({
+      error: 'Invalid parameter: exam',
+      details: `exam must be one of: ${VALID_EXAMS.join(', ')}`,
+    } satisfies ErrorResponse);
+    return;
+  }
 
   if (!rank || typeof rank !== 'string' || rank.trim() === '') {
     res.status(400).json({
@@ -29,7 +40,7 @@ export function validatePredictQuery(
     res.status(400).json({
       error: 'Missing required parameter: category',
       details:
-        'category is required (e.g. Open, SC, ST, OBC - A, OBC - B, EWS, Tuition Fee Waiver)',
+        'category is required (e.g. Open, SC, ST, OBC-NCL, EWS)',
     } satisfies ErrorResponse);
     return;
   }
