@@ -1,0 +1,58 @@
+import type { ExamConfig } from '../types';
+
+export const EXAM_CONFIGS: Record<string, ExamConfig> = {
+  wbjee: {
+    examType: 'wbjee',
+    title: 'WBJEE College Predictor',
+    subtitle: 'Find your best-fit college based on your WBJEE rank',
+    rankLabel: 'Your WBJEE Rank',
+    rankMax: 200000,
+    showQuota: true,
+    showGender: false,
+    showRound: true,
+    accentColor: 'indigo',
+    defaultFilters: {
+      rank: null,
+      category: 'Open',
+      quota: 'Home State',
+      round: 'Round 1',
+      gender: '',
+    },
+  },
+  'jee-main': {
+    examType: 'jee-main',
+    title: 'JEE Main College Predictor',
+    subtitle: 'Discover NIT, IIIT & GFTI options based on your JEE Main rank',
+    rankLabel: 'Your JEE Main Rank (CRL)',
+    rankMax: 1500000,
+    showQuota: true,
+    showGender: true,
+    showRound: true,
+    accentColor: 'emerald',
+    defaultFilters: {
+      rank: null,
+      category: 'OPEN',
+      quota: 'AI',
+      round: 'Round 1',
+      gender: 'Gender-Neutral',
+    },
+  },
+  'jee-advanced': {
+    examType: 'jee-advanced',
+    title: 'JEE Advanced College Predictor',
+    subtitle: 'Find your dream IIT branch based on your JEE Advanced rank',
+    rankLabel: 'Your JEE Advanced Rank',
+    rankMax: 50000,
+    showQuota: true,
+    showGender: true,
+    showRound: true,
+    accentColor: 'amber',
+    defaultFilters: {
+      rank: null,
+      category: 'OPEN',
+      quota: 'AI',
+      round: 'Round 1',
+      gender: 'Gender-Neutral',
+    },
+  },
+};

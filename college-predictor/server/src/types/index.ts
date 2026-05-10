@@ -1,3 +1,5 @@
+export type ExamType = 'wbjee' | 'jee-main' | 'jee-advanced';
+
 export interface CollegeData {
   institute: string;
   program: string;
@@ -7,6 +9,7 @@ export interface CollegeData {
   seatType: string;
   quota: string;
   category: string;
+  gender: string;
 }
 
 export type Chance = 'Safe' | 'Moderate' | 'Risky';
@@ -16,11 +19,13 @@ export interface PredictionResult extends CollegeData {
 }
 
 export interface PredictQuery {
+  exam: string;
   rank: string;
   category: string;
   quota?: string;
   round?: string;
   seatType?: string;
+  gender?: string;
   search?: string;
   page?: string;
   limit?: string;
@@ -39,7 +44,8 @@ export interface ErrorResponse {
   details?: string;
 }
 
-export interface CsvRow {
+// WBJEE CSV has lowercase/snake_case headers
+export interface WbjeeCsvRow {
   institute: string;
   program: string;
   round: string;
@@ -48,4 +54,15 @@ export interface CsvRow {
   seat_type: string;
   quota: string;
   category: string;
+}
+
+// JEE CSVs have proper-case headers from JoSAA data
+export interface JeeCsvRow {
+  Institute: string;
+  'Academic Program Name': string;
+  Quota: string;
+  'Seat Type': string;
+  Gender: string;
+  'Opening Rank': string;
+  'Closing Rank': string;
 }

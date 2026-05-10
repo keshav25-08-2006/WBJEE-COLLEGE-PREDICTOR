@@ -1,11 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
-import type { CollegeData, CsvRow } from '../types/index.js';
+import type {
+  CollegeData,
+  WbjeeCsvRow,
+  JeeCsvRow,
+  ExamType,
+} from '../types/index.js';
 
-let dataStore: CollegeData[] = [];
+const dataStores: Record<ExamType, CollegeData[]> = {
+  wbjee: [],
+  'jee-main': [],
+  'jee-advanced': [],
+};
 
-function mapRow(row: CsvRow): CollegeData | null {
+// ─── WBJEE mapper ────────────────────────────────────────────────────
+function mapWbjeeRow(row: WbjeeCsvRow): CollegeData | null {
   const openingRank = Number(row.opening_rank);
   const closingRank = Number(row.closing_rank);
 
@@ -27,20 +37,49 @@ function mapRow(row: CsvRow): CollegeData | null {
     seatType: row.seat_type?.trim() ?? '',
     quota: row.quota?.trim() ?? '',
     category: row.category?.trim() ?? '',
+    gender: '',
   };
 }
 
-export function loadCsv(csvPath?: string): void {
-  const resolvedPath =
-    csvPath ?? path.resolve(import.meta.dirname, '../../data/cutoffs.csv');
+// ─── JEE (Main / Advanced) mapper ────────────────────────────────────
+function mapJeeRow(row: JeeCsvRow, round: string): CollegeData | null {
+  const openingRank = Number(row['Opening Rank']);
+  const closingRank = Number(row['Closing Rank']);
 
-  if (!fs.existsSync(resolvedPath)) {
-    throw new Error(`CSV file not found at: ${resolvedPath}`);
+  const institute = row.Institute?.trim();
+  const program = row['Academic Program Name']?.trim();
+
+  if (
+    !institute ||
+    !program ||
+    Number.isNaN(openingRank) ||
+    Number.isNaN(closingRank)
+  ) {
+    return null;
   }
 
-  const raw = fs.readFileSync(resolvedPath, 'utf-8');
+  return {
+    institute,
+    program,
+    round,
+    openingRank,
+    closingRank,
+    seatType: row['Seat Type']?.trim() ?? '',
+    quota: row.Quota?.trim() ?? '',
+    category: row['Seat Type']?.trim() ?? '',
+    gender: row.Gender?.trim() ?? '',
+  };
+}
 
-  const { data, errors } = Papa.parse<CsvRow>(raw, {
+// ─── Generic CSV parser ──────────────────────────────────────────────
+function parseCsvFile<T>(filePath: string): T[] {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`CSV file not found at: ${filePath}`);
+  }
+
+  const raw = fs.readFileSync(filePath, 'utf-8');
+
+  const { data, errors } = Papa.parse<T>(raw, {
     header: true,
     skipEmptyLines: true,
     transformHeader: (header: string) => header.trim(),
@@ -48,16 +87,27 @@ export function loadCsv(csvPath?: string): void {
 
   if (errors.length > 0) {
     console.warn(
-      `[CSV] ${errors.length} parse warnings:`,
-      errors.slice(0, 5).map((e) => e.message),
+      `[CSV] ${errors.length} parse warnings in ${path.basename(filePath)}:`,
+      errors.slice(0, 3).map((e) => e.message),
     );
   }
 
+  return data;
+}
+
+// ─── Load WBJEE CSV ──────────────────────────────────────────────────
+function loadWbjee(): void {
+  const csvPath = path.resolve(
+    import.meta.dirname,
+    '../../data/cutoffs.csv',
+  );
+
+  const rows = parseCsvFile<WbjeeCsvRow>(csvPath);
   const mapped: CollegeData[] = [];
   let skipped = 0;
 
-  for (const row of data) {
-    const entry = mapRow(row);
+  for (const row of rows) {
+    const entry = mapWbjeeRow(row);
     if (entry) {
       mapped.push(entry);
     } else {
@@ -65,13 +115,64 @@ export function loadCsv(csvPath?: string): void {
     }
   }
 
-  dataStore = mapped;
-
+  dataStores.wbjee = mapped;
   console.log(
-    `[CSV] Loaded ${dataStore.length} records (${skipped} skipped) from ${path.basename(resolvedPath)}`,
+    `[CSV] WBJEE: Loaded ${mapped.length} records (${skipped} skipped)`,
   );
 }
 
-export function getData(): ReadonlyArray<CollegeData> {
-  return dataStore;
+// ─── Load JEE CSVs (6 rounds each) ──────────────────────────────────
+function loadJeeDataset(exam: 'jee-main' | 'jee-advanced'): void {
+  const prefix = exam === 'jee-main' ? 'jee-main' : 'jee-advanced';
+  const allMapped: CollegeData[] = [];
+  let totalSkipped = 0;
+
+  for (let round = 1; round <= 6; round++) {
+    const filename = `${prefix}-round-${round}.csv`;
+    const csvPath = path.resolve(
+      import.meta.dirname,
+      `../../data/${filename}`,
+    );
+
+    if (!fs.existsSync(csvPath)) {
+      console.warn(`[CSV] File not found, skipping: ${filename}`);
+      continue;
+    }
+
+    const rows = parseCsvFile<JeeCsvRow>(csvPath);
+    let skipped = 0;
+
+    for (const row of rows) {
+      const entry = mapJeeRow(row, `Round ${round}`);
+      if (entry) {
+        allMapped.push(entry);
+      } else {
+        skipped++;
+      }
+    }
+
+    totalSkipped += skipped;
+  }
+
+  dataStores[exam] = allMapped;
+  const label = exam === 'jee-main' ? 'JEE Main' : 'JEE Advanced';
+  console.log(
+    `[CSV] ${label}: Loaded ${allMapped.length} records (${totalSkipped} skipped) across 6 rounds`,
+  );
+}
+
+// ─── Public API ──────────────────────────────────────────────────────
+export function loadAllCsvs(): void {
+  loadWbjee();
+  loadJeeDataset('jee-main');
+  loadJeeDataset('jee-advanced');
+}
+
+/** @deprecated Use loadAllCsvs() instead */
+export function loadCsv(): void {
+  loadAllCsvs();
+}
+
+export function getData(exam: ExamType = 'wbjee'): ReadonlyArray<CollegeData> {
+  return dataStores[exam] ?? dataStores.wbjee;
 }
