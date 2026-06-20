@@ -1,4 +1,4 @@
-export type ExamType = 'wbjee' | 'jee-main' | 'jee-advanced';
+export type ExamType = 'wbjee' | 'jee-main' | 'jee-advanced' | 'csab';
 
 export interface CollegeData {
   institute: string;
@@ -26,6 +26,7 @@ export interface PredictQuery {
   round?: string;
   seatType?: string;
   gender?: string;
+  year?: string;
   search?: string;
   page?: string;
   limit?: string;

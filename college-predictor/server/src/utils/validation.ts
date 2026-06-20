@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { ErrorResponse, ExamType } from '../types/index.js';
 
-const VALID_EXAMS: ExamType[] = ['wbjee', 'jee-main', 'jee-advanced'];
+const VALID_EXAMS: ExamType[] = ['wbjee', 'jee-main', 'jee-advanced', 'csab'];
 
 export function validatePredictQuery(
   req: Request,

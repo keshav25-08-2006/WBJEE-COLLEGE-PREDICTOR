@@ -6,6 +6,7 @@ import App from './App';
 import { WbjeePage } from './pages/WbjeePage';
 import { JeeMainPage } from './pages/JeeMainPage';
 import { JeeAdvancedPage } from './pages/JeeAdvancedPage';
+import { CsabPage } from './pages/CsabPage';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="wbjee" element={<WbjeePage />} />
           <Route path="jee-main" element={<JeeMainPage />} />
           <Route path="jee-advanced" element={<JeeAdvancedPage />} />
+          <Route path="csab" element={<CsabPage />} />
           <Route path="*" element={<Navigate to="/wbjee" replace />} />
         </Route>
       </Routes>

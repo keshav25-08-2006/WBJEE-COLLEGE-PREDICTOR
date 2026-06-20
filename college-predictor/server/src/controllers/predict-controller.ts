@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { predict, getDistinctValues } from '../services/predict-service.js';
+import { getAvailableYears } from '../utils/csv-loader.js';
 import type { PredictQuery, ExamType } from '../types/index.js';
 
 const DEFAULT_PAGE = 1;
@@ -16,6 +17,7 @@ export function handlePredict(req: Request, res: Response): void {
   const round = query.round?.trim() || undefined;
   const seatType = query.seatType?.trim() || undefined;
   const gender = query.gender?.trim() || undefined;
+  const year = query.year?.trim() || undefined;
   const search = query.search?.trim() || undefined;
 
   const page = Math.max(1, Number(query.page) || DEFAULT_PAGE);
@@ -23,7 +25,7 @@ export function handlePredict(req: Request, res: Response): void {
 
   const result = predict(
     exam,
-    { rank, category, quota, round, seatType, gender, search },
+    { rank, category, quota, round, seatType, gender, search, year },
     { page, limit },
   );
 
@@ -32,7 +34,10 @@ export function handlePredict(req: Request, res: Response): void {
 
 export function handleFilters(req: Request, res: Response): void {
   const exam = (req.query.exam as ExamType) || 'wbjee';
-  res.json(getDistinctValues(exam));
+  const year = (req.query.year as string) || undefined;
+  const opts = getDistinctValues(exam, year);
+  const years = getAvailableYears(exam);
+  res.json({ ...opts, years });
 }
 
 export function handleHealth(_req: Request, res: Response): void {

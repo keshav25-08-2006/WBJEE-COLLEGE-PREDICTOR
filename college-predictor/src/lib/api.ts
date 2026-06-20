@@ -33,6 +33,10 @@ export async function fetchPredictions(
     params.set('search', search.trim());
   }
 
+  if (filters.year) {
+    params.set('year', filters.year);
+  }
+
   const res = await fetch(`${API_BASE}/predict?${params}`);
 
   if (!res.ok) {
@@ -43,8 +47,10 @@ export async function fetchPredictions(
   return res.json();
 }
 
-export async function fetchFilterOptions(exam: ExamType = 'wbjee'): Promise<FilterOptions> {
-  const res = await fetch(`${API_BASE}/filters?exam=${exam}`);
+export async function fetchFilterOptions(exam: ExamType = 'wbjee', year?: string): Promise<FilterOptions> {
+  const params = new URLSearchParams({ exam });
+  if (year) params.set('year', year);
+  const res = await fetch(`${API_BASE}/filters?${params.toString()}`);
 
   if (!res.ok) {
     throw new Error(`Failed to load filter options: HTTP ${res.status}`);

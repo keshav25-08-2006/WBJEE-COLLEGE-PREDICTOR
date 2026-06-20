@@ -82,7 +82,7 @@ function ResultsTable({ config, results, isLoading, hasSearched }: ResultsTableP
       <AnimatePresence mode="popLayout">
         {results.map((result, index) => (
           <motion.div
-            key={`${result.institute}-${result.program}-${result.category}-${result.quota}-${result.round}-${result.gender}`}
+            key={`${result.institute}-${result.program}-${result.category}-${result.quota}-${result.round}-${result.gender}-${result.seatType}-${result.openingRank}-${result.closingRank}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
