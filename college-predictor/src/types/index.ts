@@ -1,4 +1,4 @@
-export type ExamType = 'wbjee' | 'jee-main' | 'jee-advanced';
+export type ExamType = 'wbjee' | 'jee-main' | 'jee-advanced' | 'csab';
 
 export type Chance = 'Safe' | 'Moderate' | 'Risky';
 
@@ -25,6 +25,7 @@ export interface FilterState {
   quota: string;
   round: string;
   gender: string;
+  year?: string;
 }
 
 export interface SearchFilters {
@@ -47,6 +48,7 @@ export interface FilterOptions {
   rounds: string[];
   seatTypes: string[];
   genders: string[];
+  years?: string[];
 }
 
 export interface ExamConfig {

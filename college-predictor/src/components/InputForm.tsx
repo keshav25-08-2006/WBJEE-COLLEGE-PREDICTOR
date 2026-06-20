@@ -47,6 +47,10 @@ function InputForm({
     ? toSelectOptions(filterOptions.rounds)
     : [{ value: filters.round, label: filters.round }];
 
+  const yearOptions = filterOptions && filterOptions.years
+    ? toSelectOptions(filterOptions.years)
+    : (filters.year ? [{ value: filters.year, label: filters.year }] : []);
+
   const genderOptions = filterOptions
     ? toSelectOptions(filterOptions.genders)
     : filters.gender
@@ -54,7 +58,7 @@ function InputForm({
       : [];
 
   // Calculate grid columns based on visible fields
-  const visibleFields = 1 + 1 + (config.showQuota ? 1 : 0) + (config.showRound ? 1 : 0) + (config.showGender ? 1 : 0);
+  const visibleFields = 1 + 1 + (config.showQuota ? 1 : 0) + (config.showRound ? 1 : 0) + (config.showGender ? 1 : 0) + (config.examType === 'wbjee' ? 1 : 0);
   const gridClass =
     visibleFields <= 3
       ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
@@ -113,6 +117,16 @@ function InputForm({
               onChange={(e) =>
                 onFiltersChange({ ...filters, round: e.target.value })
               }
+            />
+          )}
+
+          {config.examType === 'wbjee' && yearOptions.length > 0 && (
+            <Select
+              id="year-select"
+              label="Year"
+              options={yearOptions}
+              value={filters.year}
+              onChange={(e) => onFiltersChange({ ...filters, year: e.target.value })}
             />
           )}
 

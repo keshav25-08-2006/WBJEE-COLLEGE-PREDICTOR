@@ -32,6 +32,14 @@ const NAV_ITEMS = [
     activeGlow: 'shadow-amber-500/30',
     hoverBg: 'hover:bg-amber-500/10',
   },
+  {
+    to: '/csab',
+    label: 'CSAB',
+    shortLabel: 'CSAB',
+    gradient: 'from-purple-500 to-fuchsia-600',
+    activeGlow: 'shadow-purple-500/30',
+    hoverBg: 'hover:bg-purple-500/10',
+  },
 ];
 
 function Header({ theme, onToggleTheme }: HeaderProps) {
@@ -53,8 +61,8 @@ function Header({ theme, onToggleTheme }: HeaderProps) {
               <h1 className="font-heading text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:text-xl">
                 College Predictor
               </h1>
-              <p className="hidden text-xs text-slate-500 dark:text-slate-400 sm:block">
-                WBJEE · JEE Main · JEE Advanced
+                <p className="hidden text-xs text-slate-500 dark:text-slate-400 sm:block">
+                WBJEE · JEE Main · JEE Advanced · CSAB
               </p>
             </div>
           </NavLink>

@@ -37,10 +37,10 @@ export function usePredictor({ examType, defaultFilters }: UsePredictorOptions) 
   // Fetch filter options on mount or exam type change
   useEffect(() => {
     setFilterOptions(null);
-    fetchFilterOptions(examType)
+    fetchFilterOptions(examType, filters.year)
       .then(setFilterOptions)
       .catch((err) => console.warn('Failed to load filter options:', err));
-  }, [examType]);
+  }, [examType, filters.year]);
 
   // Reset state when exam type changes
   useEffect(() => {

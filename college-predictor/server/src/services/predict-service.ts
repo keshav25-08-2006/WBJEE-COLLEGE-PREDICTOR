@@ -14,6 +14,7 @@ interface FilterParams {
   round?: string;
   seatType?: string;
   gender?: string;
+  year?: string;
   search?: string;
 }
 
@@ -115,7 +116,7 @@ export function predict(
   if (cached && now - cached.ts < CACHE_TTL_MS) {
     allResults = cached.results;
   } else {
-    allResults = filterAndPredict(getData(exam), params);
+    allResults = filterAndPredict(getData(exam, params.year), params);
     cache.set(cacheKey, { results: allResults, ts: now });
   }
 
@@ -134,7 +135,7 @@ export function predict(
   };
 }
 
-export function getDistinctValues(exam: ExamType = 'wbjee'): {
+export function getDistinctValues(exam: ExamType = 'wbjee', year?: string): {
   categories: string[];
   quotas: string[];
   rounds: string[];
@@ -147,7 +148,7 @@ export function getDistinctValues(exam: ExamType = 'wbjee'): {
   const seatTypes = new Set<string>();
   const genders = new Set<string>();
 
-  for (const entry of getData(exam)) {
+  for (const entry of getData(exam, year)) {
     if (entry.category) cats.add(entry.category);
     if (entry.quota) quotas.add(entry.quota);
     if (entry.round) rounds.add(entry.round);
